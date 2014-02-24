@@ -10,7 +10,6 @@
 
 - Entra na pasta
 - Roda: gem install bundler
-- Roda: gem install fastercsv (instalados da gem para ler arquivos .CSV)
 - Roda: bundle install
 - Roda: rackup
 
