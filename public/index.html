@@ -34,7 +34,7 @@
             var l = layers[i];
             $.getJSON('/'+l,function(data){
                 for(var o=0;o<data.length;o++) {
-                    dataLayers[l].addData(data[0]);
+                    dataLayers[l].addData(data[o]);
                 }
             });
         }
