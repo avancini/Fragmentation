@@ -6,6 +6,11 @@
 require 'csv'
 require 'rubygems'
 require 'neography'
+require 'fileutils' 
+
+## Comando para deletar um diretório e para recriar o diretório
+#FileUtils.rm_rf('C:\Users\Usuário\Documents\Neo4j\default.graphdb')
+#FileUtils.mkdir('C:\Users\Usuário\Documents\Neo4j\default.graphdb')
 
 especies = []
 
@@ -17,10 +22,10 @@ end
 
 ## Cria a estrutura taxonômica dentro do banco
 @neo = Neography::Rest.new
-@neo.create_node
+#@neo.create_node
 #@neo.create_node_index('especie') não consegui associar um índice ao nó  
 
-## Funciona, mas precisa fazer o loop para inserir todos os pontos
+## Loop para varrer as linhas do arquivo .CSV criando um vetor e inserindo no banco as famílias e as espécies criando o link entre elas
 a = especies.count - 1
 
 c = especies[0]["familia"]
@@ -33,10 +38,41 @@ for b in (0..a)
  		y = @neo.create_node("familia" => c)
 		@neo.add_label(y, "Familia")
 	end
-	x = @neo.create_node("codigo" => especies[b]["id"], "especie" => especies[b]["nome"])
+	x = @neo.create_node(:codigo => especies[b]["id"], "especie" => especies[b]["nome"])
 	@neo.add_label(x, "Especie")
-	@neo.create_relationship("familia", x, y)
+	@neo.create_relationship("TAXON_IN", x, y)
 end
+
+
+@neo.create_spatial_index('occurrence')
+
+ocorrencias = []
+
+CSV.foreach('C:\GitHub\Fragmentation\data\occurrence_information.csv', :col_sep => ";", :headers => true) do |row|
+	ocorrencias.push( Hash[row.headers.zip(row.fields)])
+end
+
+## Loop para varrer as linhas do arquivo .CSV criando um vetor e inserindo no banco os pontos de ocorrência e criando o link com as espécies
+a = ocorrencias.count - 1
+
+for b in (0..a)
+	x = @neo.create_node({:codigo => ocorrencias[b]["id"], :lat => ocorrencias[b]["latitude"].to_f, :lon => ocorrencias[b]["longitude"].to_f})
+	@neo.add_label(x, "Ocorrencia")
+	## Cria o ponto espacialmente usando o index occurrence
+	@neo.add_node_to_spatial_index("occurrence", x)
+	puts b
+end
+
+## Cria o relacionamento entre os registros de ocorrência e as espécies
+resultado = @neo.execute_query("MATCH (a:Ocorrencia),(b:Especie) WHERE a.codigo = b.codigo CREATE (a)-[r:POINT_IN]->(b);")
+
+
+
+
+
+
+
+
 
 
 
