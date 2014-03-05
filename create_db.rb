@@ -38,7 +38,7 @@ for b in (0..a)
  		y = @neo.create_node("familia" => c)
 		@neo.add_label(y, "Familia")
 	end
-	x = @neo.create_node(:codigo => especies[b]["id"], "especie" => especies[b]["nome"])
+	x = @neo.create_node(:id => especies[b]["id"], "especie" => especies[b]["nome"])
 	@neo.add_label(x, "Especie")
 	@neo.create_relationship("TAXON_IN", x, y)
 end
@@ -56,7 +56,7 @@ end
 a = ocorrencias.count - 1
 
 for b in (0..a)
-	x = @neo.create_node({:codigo => ocorrencias[b]["id"], :lat => ocorrencias[b]["latitude"].to_f, :lon => ocorrencias[b]["longitude"].to_f})
+	x = @neo.create_node({:id => ocorrencias[b]["id"], :codigo => ocorrencias[b]["codigo"], :lat => ocorrencias[b]["latitude"].to_f, :lon => ocorrencias[b]["longitude"].to_f})
 	@neo.add_label(x, "Ocorrencia")
 	## Cria o ponto espacialmente usando o index occurrence
 	@neo.add_node_to_spatial_index("occurrence", x)
@@ -64,13 +64,11 @@ for b in (0..a)
 end
 
 ## Cria o relacionamento entre os registros de ocorrência e as espécies
-resultado = @neo.execute_query("MATCH (a:Ocorrencia),(b:Especie) WHERE a.codigo = b.codigo CREATE (a)-[r:POINT_IN]->(b);")
+resultado = @neo.execute_query("MATCH (a:Ocorrencia),(b:Especie) WHERE a.id = b.id CREATE (a)-[r:POINT_IN]->(b);")
 
 
-
-
-
-
+## Cria o relacionamento entre os registros de ocorrência de uma mesma espécie com a distância entre os pontos
+resultado = @neo.execute_query("MATCH (a:Ocorrencia),(b:Ocorrencia) WHERE NOT (a)-[:POPULATION]->(b) AND a.id = b.id CREATE (a)-[r:POPULATION]->(b);")
 
 
 
@@ -86,15 +84,3 @@ resultado = @neo.execute_query("MATCH (a:Ocorrencia),(b:Especie) WHERE a.codigo 
 # @neo.create_node_index("ft_users", "fulltext")
 # @neo.add_node_to_index("ft_users", "name", "Max Payne", node1)
 # @neo.add_label(node, "Person")
-
-
-
-
-
-
-
-
-
-
-
-

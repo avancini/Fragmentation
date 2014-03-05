@@ -16,17 +16,15 @@ get '/' do
 end
 
 get '/pontos' do
-     #resultado = neo.execute_query("start n = node:occurrence({location}) where n.codigo = '101535' return n;")
+     #resultado = neo.execute_query("start n = node:occurrence({location}) where n.id = '101535' return n;")
      num=params[:numero]
-     resultado = neo.execute_query("match (n:Ocorrencia{codigo:'#{num}'}) return n.codigo, n.lon, n.lat;")
+     resultado = neo.execute_query("match (n:Ocorrencia{id:'#{num}'}) return n.id, n.lon, n.lat;")
      
 #puts resultado
     pontos = []
 
         y = resultado["data"].count - 1
-#puts y
-#puts resultado.class
-#puts resultado
+
         for x in (0..y) 
             valor = resultado["data"][x]
             puts valor[2]
